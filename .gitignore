@@ -1,0 +1,7 @@
+﻿# Raw company source material (not for the repo)
+*.pdf
+
+# Build output and local tooling
+build/
+.dart_tool/
+*.log
