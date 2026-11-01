@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'ai/ai_service.dart';
 import 'data/product_repository.dart';
-import 'screens/product_list_screen.dart';
+import 'screens/home_shell.dart';
 import 'services/history_store.dart';
 import 'services/settings_store.dart';
 
@@ -47,8 +47,10 @@ class SalesPitchApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1B6B50)),
         useMaterial3: true,
+        appBarTheme: const AppBarTheme(centerTitle: false, scrolledUnderElevation: 0),
+        cardTheme: CardThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
       ),
-      home: const ProductListScreen(),
+      home: const HomeShell(),
     );
   }
 }

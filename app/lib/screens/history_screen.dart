@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../data/product_repository.dart';
 import '../main.dart';
+import 'home_screen.dart' show scoreColor;
 import 'result_screen.dart';
 
 class HistoryScreen extends StatelessWidget {
@@ -35,7 +36,7 @@ class HistoryScreen extends StatelessWidget {
                         title: Text(a.productName),
                         subtitle: Text('${t.day}/${t.month}/${t.year}  ${t.hour}:${t.minute.toString().padLeft(2, '0')}'),
                         trailing: Text('${a.result.total.toStringAsFixed(1)}/১০',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: scoreColor(a.result.total))),
                         onTap: () {
                           final matches = repo.products.where((p) => p.id == a.productId);
                           if (matches.isEmpty) return;

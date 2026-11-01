@@ -11,7 +11,8 @@ import 'result_screen.dart';
 
 class PracticeScreen extends StatefulWidget {
   final Product product;
-  const PracticeScreen({super.key, required this.product});
+  final bool startInObjection;
+  const PracticeScreen({super.key, required this.product, this.startInObjection = false});
 
   @override
   State<PracticeScreen> createState() => _PracticeScreenState();
@@ -24,7 +25,12 @@ class _PracticeScreenState extends State<PracticeScreen> {
   bool _listening = false;
   bool _scoring = false;
   bool _showHints = false;
-  String _baseText = ''; // text before the current listening session
+  // Dictation state. The recognizer restarts its word list after every pause, so
+  // finished phrases are kept in _committed and only _partial is replaced.
+  String _committed = '';
+  String _partial = '';
+  bool _wantListening = false; // true from mic-on until the user taps stop
+  int _silentRestarts = 0;
 
   bool _objectionMode = false;
   Objection? _objection;
@@ -34,10 +40,14 @@ class _PracticeScreenState extends State<PracticeScreen> {
   void initState() {
     super.initState();
     _initSpeech();
+    if (widget.startInObjection) {
+      _objectionMode = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadObjection());
+    }
   }
 
   Future<void> _setMode(bool objection) async {
-    if (_listening) await _speech.stop();
+    await _stopListening();
     setState(() {
       _objectionMode = objection;
       _listening = false;
@@ -66,42 +76,100 @@ class _PracticeScreenState extends State<PracticeScreen> {
   Future<void> _initSpeech() async {
     final ok = await _speech.initialize(
       onStatus: (s) {
-        if ((s == 'done' || s == 'notListening') && mounted) setState(() => _listening = false);
+        // The engine ends its session after a pause. Keep dictating until the user stops.
+        if ((s == 'done' || s == 'notListening') && mounted && _wantListening) _onSessionEnded();
       },
       onError: (e) {
-        if (mounted) {
-          setState(() => _listening = false);
-          _snack('মাইক্রোফোন সমস্যা: ${e.errorMsg}');
+        if (!mounted) return;
+        final quiet = e.errorMsg == 'error_no_match' || e.errorMsg == 'error_speech_timeout';
+        if (_wantListening && quiet && _silentRestarts < 3) {
+          _silentRestarts++;
+          _onSessionEnded();
+          return;
         }
+        _wantListening = false;
+        setState(() => _listening = false);
+        _snack(quiet ? 'কিছু শোনা যায়নি। আবার মাইক চাপুন।' : 'মাইক্রোফোন সমস্যা: ${e.errorMsg}');
       },
     );
     if (mounted) setState(() => _speechReady = ok);
   }
 
   Future<void> _toggleMic() async {
-    if (_listening) {
-      await _speech.stop();
-      setState(() => _listening = false);
+    if (_listening || _wantListening) {
+      await _stopListening();
       return;
     }
     if (!_speechReady) {
       _snack('এই ডিভাইসে voice input চালু করা যায়নি। টাইপ করে লিখুন।');
       return;
     }
-    _baseText = _controller.text.trim();
+    _committed = _controller.text.trim(); // keep whatever is already in the box
+    _partial = '';
+    _silentRestarts = 0;
+    _wantListening = true;
     setState(() => _listening = true);
-    await _speech.listen(
-      onResult: _onResult,
-      listenOptions: SpeechListenOptions(
-        localeId: 'bn_BD',
-        listenFor: const Duration(minutes: 2),
-        pauseFor: const Duration(seconds: 6),
-      ),
-    );
+    await _listen();
+  }
+
+  Future<void> _listen() => _speech.listen(
+        onResult: _onResult,
+        listenOptions: SpeechListenOptions(
+          localeId: 'bn_BD',
+          partialResults: true,
+          listenMode: ListenMode.dictation,
+          cancelOnError: false,
+          listenFor: const Duration(minutes: 5),
+          pauseFor: const Duration(seconds: 8),
+        ),
+      );
+
+  Future<void> _stopListening() async {
+    _wantListening = false;
+    _commitPartial();
+    if (_speech.isListening) await _speech.stop();
+    if (mounted) setState(() => _listening = false);
+  }
+
+  /// The engine stopped on its own (a pause): bank what was heard and listen again.
+  Future<void> _onSessionEnded() async {
+    _commitPartial();
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+    if (!mounted || !_wantListening || _speech.isListening) return;
+    try {
+      await _listen();
+    } catch (_) {
+      _wantListening = false;
+      if (mounted) setState(() => _listening = false);
+    }
+  }
+
+  static String _join(String a, String b) => a.isEmpty ? b : (b.isEmpty ? a : '$a $b');
+
+  void _commitPartial() {
+    _committed = _join(_committed, _partial);
+    _partial = '';
   }
 
   void _onResult(SpeechRecognitionResult r) {
-    final text = _baseText.isEmpty ? r.recognizedWords : '$_baseText ${r.recognizedWords}';
+    final words = r.recognizedWords.trim();
+    if (words.isNotEmpty) _silentRestarts = 0;
+    debugPrint('stt final=${r.finalResult} words="$words" committed="$_committed" partial="$_partial"');
+
+    // Some engines start a new phrase without flagging the old one as final: the word
+    // list shrinks and starts differently. Bank the old phrase instead of overwriting it.
+    if (!r.finalResult && _partial.isNotEmpty && words.isNotEmpty) {
+      final startsSame = words.startsWith(_partial.split(' ').first);
+      if (!startsSame && words.length < _partial.length) _commitPartial();
+    }
+
+    if (r.finalResult) {
+      _partial = words;
+      _commitPartial();
+    } else {
+      _partial = words;
+    }
+    final text = _join(_committed, _partial);
     _controller.value = TextEditingValue(text: text, selection: TextSelection.collapsed(offset: text.length));
   }
 
@@ -119,7 +187,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
     final ai = context.read<AiService>();
     final history = context.read<HistoryNotifier>();
     final navigator = Navigator.of(context);
-    if (_listening) await _speech.stop();
+    await _stopListening();
     setState(() {
       _scoring = true;
       _listening = false;
@@ -176,6 +244,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
   @override
   void dispose() {
+    _wantListening = false;
     _speech.cancel();
     _controller.dispose();
     super.dispose();
