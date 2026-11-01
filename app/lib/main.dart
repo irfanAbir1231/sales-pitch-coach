@@ -5,6 +5,7 @@ import 'ai/ai_service.dart';
 import 'data/product_repository.dart';
 import 'screens/home_shell.dart';
 import 'services/history_store.dart';
+import 'services/profile_store.dart';
 import 'services/settings_store.dart';
 
 Future<void> main() async {
@@ -12,12 +13,14 @@ Future<void> main() async {
   final repo = ProductRepository();
   final settings = SettingsStore();
   final history = HistoryStore();
-  await Future.wait([repo.load(), settings.init(), history.init()]);
+  final profile = ProfileStore();
+  await Future.wait([repo.load(), settings.init(), history.init(), profile.init()]);
 
   runApp(MultiProvider(
     providers: [
       Provider<ProductRepository>.value(value: repo),
       Provider<SettingsStore>.value(value: settings),
+      ChangeNotifierProvider<ProfileStore>.value(value: profile),
       Provider<AiService>.value(value: AiService(settings)),
       ChangeNotifierProvider<HistoryNotifier>(create: (_) => HistoryNotifier(history)),
     ],
@@ -42,7 +45,7 @@ class SalesPitchApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Sales Pitch Coach',
+      title: 'Pitch Coach',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1B6B50)),

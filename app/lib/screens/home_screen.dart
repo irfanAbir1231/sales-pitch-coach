@@ -7,6 +7,7 @@ import '../data/product_repository.dart';
 import '../main.dart';
 import '../models/product.dart';
 import '../services/history_store.dart';
+import '../widgets/product_image.dart';
 import 'practice_screen.dart';
 import 'result_screen.dart';
 
@@ -31,14 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     final all = context.read<ProductRepository>().products;
     _challenge = all[Random().nextInt(all.length)];
-  }
-
-  static String _greeting() {
-    final h = DateTime.now().hour;
-    if (h < 12) return 'শুভ সকাল';
-    if (h < 17) return 'শুভ দুপুর';
-    if (h < 20) return 'শুভ বিকেল';
-    return 'শুভ সন্ধ্যা';
   }
 
   /// Consecutive days with at least one attempt, counting back from today (or yesterday).
@@ -88,34 +81,30 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             // Fixed header: stays put while the content below scrolls.
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Row(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _greeting(),
-                          style: tt.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                  Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.asset('assets/icon/logo_256.png', width: 38, height: 38),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'পিচ কোচ',
+                        style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: cs.primary),
+                      ),
+                      const Spacer(),
+                      if (streak > 0)
+                        Chip(
+                          avatar: const Text('🔥'),
+                          label: Text('$streak দিন'),
+                          visualDensity: VisualDensity.compact,
                         ),
-                        Text(
-                          'আজ একটু প্র্যাকটিস করবেন?',
-                          style: tt.bodyMedium?.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
-                  if (streak > 0)
-                    Chip(
-                      avatar: const Text('🔥'),
-                      label: Text('$streak দিন'),
-                      visualDensity: VisualDensity.compact,
-                    ),
                 ],
               ),
             ),
@@ -265,56 +254,64 @@ class _HomeScreenState extends State<HomeScreen> {
         colors: [cs.primary, cs.primary.withValues(alpha: 0.75)],
       ),
     ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    child: Row(
       children: [
-        Text(
-          'আজকের চ্যালেঞ্জ',
-          style: tt.labelLarge?.copyWith(
-            color: cs.onPrimary.withValues(alpha: 0.85),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          _challenge.name,
-          style: tt.titleLarge?.copyWith(
-            color: cs.onPrimary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          _challenge.category,
-          style: tt.bodyMedium?.copyWith(
-            color: cs.onPrimary.withValues(alpha: 0.85),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            FilledButton.icon(
-              onPressed: () => _open(_challenge),
-              style: FilledButton.styleFrom(
-                backgroundColor: cs.onPrimary,
-                foregroundColor: cs.primary,
-              ),
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('শুরু করুন'),
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              tooltip: 'অন্য পণ্য',
-              color: cs.onPrimary,
-              onPressed: () {
-                final all = context.read<ProductRepository>().products;
-                setState(() => _challenge = all[Random().nextInt(all.length)]);
-              },
-              icon: const Icon(Icons.shuffle),
-            ),
-          ],
-        ),
+        Expanded(child: _challengeText(cs, tt)),
+        const SizedBox(width: 12),
+        ProductImage(product: _challenge, size: 112, radius: 20),
       ],
     ),
+  );
+
+  Widget _challengeText(ColorScheme cs, TextTheme tt) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        'আজকের চ্যালেঞ্জ',
+        style: tt.labelLarge?.copyWith(
+          color: cs.onPrimary.withValues(alpha: 0.85),
+        ),
+      ),
+      const SizedBox(height: 6),
+      Text(
+        _challenge.name,
+        style: tt.titleLarge?.copyWith(
+          color: cs.onPrimary,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      const SizedBox(height: 2),
+      Text(
+        _challenge.category,
+        style: tt.bodyMedium?.copyWith(
+          color: cs.onPrimary.withValues(alpha: 0.85),
+        ),
+      ),
+      const SizedBox(height: 16),
+      Row(
+        children: [
+          FilledButton.icon(
+            onPressed: () => _open(_challenge),
+            style: FilledButton.styleFrom(
+              backgroundColor: cs.onPrimary,
+              foregroundColor: cs.primary,
+            ),
+            icon: const Icon(Icons.play_arrow),
+            label: const Text('শুরু করুন'),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            tooltip: 'অন্য পণ্য',
+            color: cs.onPrimary,
+            onPressed: () {
+              final all = context.read<ProductRepository>().products;
+              setState(() => _challenge = all[Random().nextInt(all.length)]);
+            },
+            icon: const Icon(Icons.shuffle),
+          ),
+        ],
+      ),
+    ],
   );
 
   Widget _stat(String label, String value, IconData icon, ColorScheme cs) =>

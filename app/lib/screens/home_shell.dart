@@ -56,7 +56,7 @@ class _HomeShellState extends State<HomeShell> {
           NavigationDestination(
               icon: Icon(Icons.record_voice_over_outlined), selectedIcon: Icon(Icons.record_voice_over), label: 'প্র্যাকটিস'),
           NavigationDestination(icon: Icon(Icons.history), selectedIcon: Icon(Icons.history), label: 'ইতিহাস'),
-          NavigationDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: 'সেটিংস'),
+          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'প্রোফাইল'),
         ],
       ),
     );

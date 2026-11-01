@@ -7,12 +7,17 @@ import '../ai/ai_service.dart';
 import '../main.dart';
 import '../models/product.dart';
 import '../services/history_store.dart';
+import '../widgets/product_image.dart';
 import 'result_screen.dart';
 
 class PracticeScreen extends StatefulWidget {
   final Product product;
   final bool startInObjection;
-  const PracticeScreen({super.key, required this.product, this.startInObjection = false});
+  const PracticeScreen({
+    super.key,
+    required this.product,
+    this.startInObjection = false,
+  });
 
   @override
   State<PracticeScreen> createState() => _PracticeScreenState();
@@ -60,7 +65,10 @@ class _PracticeScreenState extends State<PracticeScreen> {
     final ai = context.read<AiService>();
     setState(() => _loadingObjection = true);
     try {
-      final o = await ai.nextObjection(widget.product, previous: _objection?.question);
+      final o = await ai.nextObjection(
+        widget.product,
+        previous: _objection?.question,
+      );
       if (!mounted) return;
       setState(() {
         _objection = o;
@@ -77,11 +85,15 @@ class _PracticeScreenState extends State<PracticeScreen> {
     final ok = await _speech.initialize(
       onStatus: (s) {
         // The engine ends its session after a pause. Keep dictating until the user stops.
-        if ((s == 'done' || s == 'notListening') && mounted && _wantListening) _onSessionEnded();
+        if ((s == 'done' || s == 'notListening') && mounted && _wantListening) {
+          _onSessionEnded();
+        }
       },
       onError: (e) {
         if (!mounted) return;
-        final quiet = e.errorMsg == 'error_no_match' || e.errorMsg == 'error_speech_timeout';
+        final quiet =
+            e.errorMsg == 'error_no_match' ||
+            e.errorMsg == 'error_speech_timeout';
         if (_wantListening && quiet && _silentRestarts < 3) {
           _silentRestarts++;
           _onSessionEnded();
@@ -89,7 +101,11 @@ class _PracticeScreenState extends State<PracticeScreen> {
         }
         _wantListening = false;
         setState(() => _listening = false);
-        _snack(quiet ? 'কিছু শোনা যায়নি। আবার মাইক চাপুন।' : 'মাইক্রোফোন সমস্যা: ${e.errorMsg}');
+        _snack(
+          quiet
+              ? 'কিছু শোনা যায়নি। আবার মাইক চাপুন।'
+              : 'মাইক্রোফোন সমস্যা: ${e.errorMsg}',
+        );
       },
     );
     if (mounted) setState(() => _speechReady = ok);
@@ -113,16 +129,16 @@ class _PracticeScreenState extends State<PracticeScreen> {
   }
 
   Future<void> _listen() => _speech.listen(
-        onResult: _onResult,
-        listenOptions: SpeechListenOptions(
-          localeId: 'bn_BD',
-          partialResults: true,
-          listenMode: ListenMode.dictation,
-          cancelOnError: false,
-          listenFor: const Duration(minutes: 5),
-          pauseFor: const Duration(seconds: 8),
-        ),
-      );
+    onResult: _onResult,
+    listenOptions: SpeechListenOptions(
+      localeId: 'bn_BD',
+      partialResults: true,
+      listenMode: ListenMode.dictation,
+      cancelOnError: false,
+      listenFor: const Duration(minutes: 5),
+      pauseFor: const Duration(seconds: 8),
+    ),
+  );
 
   Future<void> _stopListening() async {
     _wantListening = false;
@@ -144,7 +160,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
     }
   }
 
-  static String _join(String a, String b) => a.isEmpty ? b : (b.isEmpty ? a : '$a $b');
+  static String _join(String a, String b) =>
+      a.isEmpty ? b : (b.isEmpty ? a : '$a $b');
 
   void _commitPartial() {
     _committed = _join(_committed, _partial);
@@ -154,7 +171,9 @@ class _PracticeScreenState extends State<PracticeScreen> {
   void _onResult(SpeechRecognitionResult r) {
     final words = r.recognizedWords.trim();
     if (words.isNotEmpty) _silentRestarts = 0;
-    debugPrint('stt final=${r.finalResult} words="$words" committed="$_committed" partial="$_partial"');
+    debugPrint(
+      'stt final=${r.finalResult} words="$words" committed="$_committed" partial="$_partial"',
+    );
 
     // Some engines start a new phrase without flagging the old one as final: the word
     // list shrinks and starts differently. Bank the old phrase instead of overwriting it.
@@ -170,7 +189,10 @@ class _PracticeScreenState extends State<PracticeScreen> {
       _partial = words;
     }
     final text = _join(_committed, _partial);
-    _controller.value = TextEditingValue(text: text, selection: TextSelection.collapsed(offset: text.length));
+    _controller.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
   }
 
   Future<void> _submit() async {
@@ -194,8 +216,12 @@ class _PracticeScreenState extends State<PracticeScreen> {
     });
     try {
       final result = await ai.score(widget.product, pitch, question: question);
-      final name = question == null ? widget.product.name : '${widget.product.name} (আপত্তি)';
-      await history.add(Attempt(widget.product.id, name, pitch, DateTime.now(), result));
+      final name = question == null
+          ? widget.product.name
+          : '${widget.product.name} (আপত্তি)';
+      await history.add(
+        Attempt(widget.product.id, name, pitch, DateTime.now(), result),
+      );
       if (!mounted) return;
       navigator.push(
         MaterialPageRoute(
@@ -216,18 +242,30 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
   Widget _objectionCard() {
     if (_loadingObjection) {
-      return const Row(children: [
-        SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
-        SizedBox(width: 12),
-        Text('দোকানদার প্রশ্ন ভাবছে...'),
-      ]);
+      return const Row(
+        children: [
+          SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          SizedBox(width: 12),
+          Text('দোকানদার প্রশ্ন ভাবছে...'),
+        ],
+      );
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('দোকানদার বলছে:', style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text(
+          'দোকানদার বলছে:',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 4),
-        Text(_objection?.question ?? 'প্রশ্ন লোড হয়নি।', style: const TextStyle(fontSize: 16)),
+        Text(
+          _objection?.question ?? 'প্রশ্ন লোড হয়নি।',
+          style: const TextStyle(fontSize: 16),
+        ),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton.icon(
@@ -240,7 +278,62 @@ class _PracticeScreenState extends State<PracticeScreen> {
     );
   }
 
-  void _snack(String m) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+  Widget _productHeader(Product p) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [cs.primaryContainer, cs.secondaryContainer],
+        ),
+      ),
+      child: Row(
+        children: [
+          Hero(
+            tag: 'product-${p.id}',
+            child: ProductImage(product: p, size: 130, radius: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Chip(
+                  label: Text(p.category),
+                  visualDensity: VisualDensity.compact,
+                  backgroundColor: cs.surface.withValues(alpha: 0.6),
+                  side: BorderSide.none,
+                ),
+                Text(
+                  p.name,
+                  style: tt.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: cs.onPrimaryContainer,
+                  ),
+                ),
+                if (p.mrp.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'MRP: ${p.mrpText}',
+                    style: tt.bodyMedium?.copyWith(
+                      color: cs.onPrimaryContainer,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _snack(String m) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
 
   @override
   void dispose() {
@@ -254,17 +347,24 @@ class _PracticeScreenState extends State<PracticeScreen> {
   Widget build(BuildContext context) {
     final p = widget.product;
     return Scaffold(
-      appBar: AppBar(title: Text(p.name)),
+      appBar: AppBar(title: const Text('পিচ প্র্যাকটিস')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(p.category, style: Theme.of(context).textTheme.labelLarge),
-          if (p.mrp.isNotEmpty) Text('MRP: ${p.mrpText}', style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 12),
+          _productHeader(p),
+          const SizedBox(height: 16),
           SegmentedButton<bool>(
             segments: const [
-              ButtonSegment(value: false, label: Text('পিচ করুন'), icon: Icon(Icons.record_voice_over)),
-              ButtonSegment(value: true, label: Text('আপত্তি সামলান'), icon: Icon(Icons.question_answer)),
+              ButtonSegment(
+                value: false,
+                label: Text('পিচ করুন'),
+                icon: Icon(Icons.record_voice_over),
+              ),
+              ButtonSegment(
+                value: true,
+                label: Text('আপত্তি সামলান'),
+                icon: Icon(Icons.question_answer),
+              ),
             ],
             selected: {_objectionMode},
             onSelectionChanged: (s) => _setMode(s.first),
@@ -274,13 +374,21 @@ class _PracticeScreenState extends State<PracticeScreen> {
             color: Theme.of(context).colorScheme.primaryContainer,
             child: Padding(
               padding: const EdgeInsets.all(12),
-              child: _objectionMode ? _objectionCard() : const Text('দোকানদারকে এই পণ্যটি পিচ করুন। মাইক বাটনে চেপে বলুন, তারপর লেখা ঠিক করে স্কোর নিন।'),
+              child: _objectionMode
+                  ? _objectionCard()
+                  : const Text(
+                      'দোকানদারকে এই পণ্যটি পিচ করুন। মাইক বাটনে চেপে বলুন, তারপর লেখা ঠিক করে স্কোর নিন।',
+                    ),
             ),
           ),
           TextButton.icon(
             onPressed: () => setState(() => _showHints = !_showHints),
-            icon: Icon(_showHints ? Icons.visibility_off : Icons.lightbulb_outline),
-            label: Text(_showHints ? 'ইঙ্গিত লুকান' : 'ইঙ্গিত দেখুন (মূল পয়েন্ট)'),
+            icon: Icon(
+              _showHints ? Icons.visibility_off : Icons.lightbulb_outline,
+            ),
+            label: Text(
+              _showHints ? 'ইঙ্গিত লুকান' : 'ইঙ্গিত দেখুন (মূল পয়েন্ট)',
+            ),
           ),
           if (_showHints)
             Card(
@@ -301,7 +409,9 @@ class _PracticeScreenState extends State<PracticeScreen> {
               border: const OutlineInputBorder(),
               hintText: _listening
                   ? 'শুনছি...'
-                  : (_objectionMode ? 'আপনার উত্তর এখানে আসবে (এডিট করা যাবে)' : 'আপনার পিচ এখানে আসবে (এডিট করা যাবে)'),
+                  : (_objectionMode
+                        ? 'আপনার উত্তর এখানে আসবে (এডিট করা যাবে)'
+                        : 'আপনার পিচ এখানে আসবে (এডিট করা যাবে)'),
             ),
           ),
           const SizedBox(height: 16),
@@ -318,10 +428,16 @@ class _PracticeScreenState extends State<PracticeScreen> {
                 child: FilledButton.icon(
                   onPressed: _scoring ? null : _submit,
                   icon: _scoring
-                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       : const Icon(Icons.send),
                   label: Text(_scoring ? 'স্কোর হচ্ছে...' : 'স্কোর দেখুন'),
-                  style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(56)),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(56),
+                  ),
                 ),
               ),
             ],
