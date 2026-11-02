@@ -30,6 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -39,6 +42,8 @@ dependencies:
   speech_to_text: ^7.5.0
   flutter_secure_storage: ^11.2.0
   shared_preferences: ^2.5.6
+  phosphor_flutter: ^2.1.0
+  flutter_tts: ^4.2.5
 
 dev_dependencies:
   flutter_test:
@@ -62,9 +67,25 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  generate: true
+
+  # Baloo Da 2 (variable weight): rounded, supports Latin and Bengali. OFL license.
+  fonts:
+    - family: BalooDa2
+      fonts:
+        - asset: assets/fonts/BalooDa2.ttf
+        - asset: assets/fonts/BalooDa2.ttf
+          weight: 500
+        - asset: assets/fonts/BalooDa2.ttf
+          weight: 600
+        - asset: assets/fonts/BalooDa2.ttf
+          weight: 700
+        - asset: assets/fonts/BalooDa2.ttf
+          weight: 800
 
   assets:
     - assets/products.json
+    - assets/objections.json
     - assets/images/products/
     - assets/icon/logo_256.png
 
@@ -103,5 +124,5 @@ flutter_launcher_icons:
   android: true
   ios: false
   image_path: assets/icon/logo.png
-  adaptive_icon_background: "#1B6B50"
+  adaptive_icon_background: "#2563EB"
   adaptive_icon_foreground: assets/icon/foreground.png

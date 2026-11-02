@@ -1,0 +1,185 @@
+{
+  "@@locale": "en",
+  "appName": "Pitch Coach",
+  "navHome": "Home",
+  "navPractice": "Practice",
+  "navHistory": "History",
+  "navProfile": "Profile",
+  "changeLanguage": "Change language",
+  "dailyChallenge": "Today's challenge",
+  "start": "Start",
+  "anotherProduct": "Another product",
+  "avgScore": "Avg score",
+  "bestScore": "Best",
+  "thisWeek": "This week",
+  "pitchPractice": "Pitch practice",
+  "handleObjections": "Handle objections",
+  "recentAttempts": "Recent attempts",
+  "seeAll": "See all",
+  "noPracticeYet": "No practice yet.",
+  "searchProducts": "Search products",
+  "all": "All",
+  "nothingFound": "Nothing found",
+  "tryOtherSearch": "Try another search.",
+  "newTag": "New",
+  "pitchMode": "Give a pitch",
+  "shopkeeperThinking": "The shopkeeper is thinking of a question...",
+  "shopkeeperSays": "Shopkeeper says:",
+  "questionNotLoaded": "Question not loaded.",
+  "anotherQuestion": "Another question",
+  "holdToTalk": "Hold to talk",
+  "listeningRelease": "Listening...",
+  "listeningHint": "Listening...",
+  "answerHint": "Your answer will appear here (you can edit it)",
+  "pitchHint": "Your pitch will appear here (you can edit it)",
+  "getScore": "Get score",
+  "scoring": "Scoring...",
+  "holdMicSnack": "Hold the mic while you speak.",
+  "questionLoadFailed": "Could not load a question: {error}",
+  "@questionLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "micUnavailable": "Voice input is not available on this device. Please type instead.",
+  "micProblem": "Microphone problem: {error}",
+  "@micProblem": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "speakOrTypeFirst": "Speak or type your pitch first.",
+  "waitForQuestion": "Wait for the shopkeeper's question to load first.",
+  "scoreFailed": "Could not score: {error}",
+  "@scoreFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "objectionSuffix": "(objection)",
+  "yourScore": "Your score",
+  "outOfTen": "/ 10",
+  "praiseHigh": "Great job!",
+  "praiseMid": "Good try!",
+  "praiseLow": "Keep practising",
+  "critKeyPoints": "Key points",
+  "critReason": "Reasons / ingredients",
+  "critStructure": "Structure",
+  "critTone": "Tone & clarity",
+  "critNoFalseClaims": "No false claims",
+  "feedbackTitle": "Feedback",
+  "coveredTitle": "What you got right",
+  "missedTitle": "What you missed",
+  "falseClaimsTitle": "Wrong / forbidden claims",
+  "betterLineTitle": "A better way to say it",
+  "viewIdealPitch": "View ideal pitch",
+  "viewIdealAnswer": "View ideal answer",
+  "tryAgain": "Try again",
+  "scoredBy": "Scored by {provider}",
+  "@scoredBy": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "myScores": "My scores",
+  "nothingYetTitle": "Nothing here yet",
+  "nothingYetMessage": "Your scores will show up here.",
+  "totalAttempts": "Total attempts",
+  "attemptsCount": "{count}",
+  "@attemptsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scoreOutOfTen": "{score}/10",
+  "@scoreOutOfTen": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "profile": "Profile",
+  "edit": "Edit",
+  "editProfile": "Edit profile",
+  "fieldName": "Name",
+  "fieldEmployeeId": "Employee ID",
+  "fieldTerritory": "Area / territory",
+  "fieldMobileLong": "Mobile number",
+  "fieldMobile": "Mobile",
+  "save": "Save",
+  "yourName": "Your name",
+  "salesOfficer": "Sales officer",
+  "completeProfile": "Complete your profile",
+  "attempts": "Attempts",
+  "notProvided": "Not provided",
+  "admin": "Admin",
+  "adminTitle": "Admin",
+  "enterPin": "Enter admin PIN",
+  "setPin": "Set a new admin PIN",
+  "ok": "OK",
+  "pinTooShort": "Enter a PIN of at least 4 digits",
+  "pinWrong": "Wrong PIN",
+  "adminProviderTitle": "Admin - AI provider",
+  "activeProvider": "Active provider",
+  "fallbackSwitch": "Fall back to another provider on failure",
+  "enterKeyFirst": "Enter the API key first",
+  "testing": "Testing...",
+  "connectionOk": "Connection OK ✓ (key saved)",
+  "failedMsg": "Failed: {msg}",
+  "@failedMsg": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "saveNoKey": "Not saved: no API key found",
+  "savedWithKeys": "Saved (keys set: {list})",
+  "@savedWithKeys": {
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "saveError": "Save failed: {error}",
+  "@saveError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "catFabric": "Fabric care",
+  "catSummer": "Summer care",
+  "catHome": "Home care",
+  "catHair": "Hair care",
+  "catSkin": "Skin care",
+  "catOral": "Oral care",
+  "catFeminine": "Feminine care",
+  "catMen": "Men's care",
+  "catBaby": "Baby care",
+  "catHealth": "Health",
+  "catHealthProtection": "Health protection",
+  "tipStart": "Start with today's challenge!",
+  "tipAgain": "Ready to beat your best score?",
+  "tipPitch": "Hold the mic and pitch to me!",
+  "tipListening": "I'm listening...",
+  "tipScoring": "Checking your pitch...",
+  "listenFeedback": "Listen to feedback",
+  "stopSpeaking": "Stop",
+  "voiceUnavailable": "This phone has no voice for the language. Install it in Google Text-to-speech settings.",
+  "hints": "Hints",
+  "close": "Close"
+}

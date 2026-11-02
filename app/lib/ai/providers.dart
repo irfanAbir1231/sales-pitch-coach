@@ -20,8 +20,8 @@ abstract class LlmProvider {
   /// Sends the prompt and returns the raw text reply of the model.
   Future<String> complete(ProviderConfig cfg, String system, String user);
 
-  Future<ScoreResult> score(ProviderConfig cfg, Product p, String pitch, {Objection? question}) async {
-    final prompt = ScoringPrompt.user(p, pitch, question: question);
+  Future<ScoreResult> score(ProviderConfig cfg, Product p, String pitch, {Objection? question, String language = 'bn'}) async {
+    final prompt = ScoringPrompt.user(p, pitch, question: question, language: language);
     final raw = await complete(cfg, ScoringPrompt.system, prompt);
     try {
       return ScoringPrompt.parse(raw, p, label);

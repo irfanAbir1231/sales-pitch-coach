@@ -3,7 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../ai/ai_service.dart';
 import '../ai/providers.dart';
+import '../l10n/l10n.dart';
 import '../services/settings_store.dart';
+import '../theme/app_theme.dart';
+import '../widgets/ds/ds.dart';
 
 /// Asks for the admin PIN (creating one on first use) before showing settings.
 class AdminGate extends StatefulWidget {
@@ -30,7 +33,7 @@ class _AdminGateState extends State<AdminGate> {
     final pin = _pin.text.trim();
     if (_hasPin == false) {
       if (pin.length < 4) {
-        setState(() => _error = 'কমপক্ষে ৪ সংখ্যার PIN দিন');
+        setState(() => _error = context.l10n.pinTooShort);
         return;
       }
       await store.setPin(pin);
@@ -38,7 +41,7 @@ class _AdminGateState extends State<AdminGate> {
     } else if (await store.checkPin(pin)) {
       setState(() => _unlocked = true);
     } else {
-      setState(() => _error = 'PIN ভুল');
+      setState(() => _error = context.l10n.pinWrong);
     }
   }
 
@@ -46,25 +49,25 @@ class _AdminGateState extends State<AdminGate> {
   Widget build(BuildContext context) {
     if (_unlocked) return const AdminScreen();
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin')),
+      appBar: DsAppBar(title: context.l10n.adminTitle),
       body: _hasPin == null
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(AppSpace.xl),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(_hasPin! ? 'Admin PIN দিন' : 'নতুন Admin PIN সেট করুন'),
-                  const SizedBox(height: 12),
+                  Text(_hasPin! ? context.l10n.enterPin : context.l10n.setPin, style: AppText.title),
+                  const SizedBox(height: AppSpace.lg),
                   TextField(
                     controller: _pin,
                     obscureText: true,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(border: const OutlineInputBorder(), errorText: _error),
+                    decoration: InputDecoration(errorText: _error),
                     onSubmitted: (_) => _submit(),
                   ),
-                  const SizedBox(height: 12),
-                  FilledButton(onPressed: _submit, child: const Text('ঠিক আছে')),
+                  const SizedBox(height: AppSpace.lg),
+                  ChunkyButton(label: context.l10n.ok, onPressed: _submit),
                 ],
               ),
             ),
@@ -107,6 +110,7 @@ class _AdminScreenState extends State<AdminScreen> {
   Future<void> _save() async {
     final s = context.read<SettingsStore>();
     final messenger = ScaffoldMessenger.of(context);
+    final l = context.l10n;
     try {
       for (final p in allProviders) {
         await s.setApiKey(p, _keys[p.id]!.text);
@@ -120,20 +124,20 @@ class _AdminScreenState extends State<AdminScreen> {
           if ((await s.apiKey(p) ?? '').isNotEmpty) p.label,
       ];
       messenger.showSnackBar(SnackBar(
-        content: Text(saved.isEmpty ? 'সেভ হয়নি: কোনো API key পাওয়া যায়নি' : 'সেভ হয়েছে (key আছে: ${saved.join(', ')})'),
+        content: Text(saved.isEmpty ? l.saveNoKey : l.savedWithKeys(saved.join(', '))),
       ));
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('সেভ ব্যর্থ: $e')));
+      messenger.showSnackBar(SnackBar(content: Text(l.saveError('$e'))));
     }
   }
 
   Future<void> _test(LlmProvider p) async {
     final key = _keys[p.id]!.text.trim();
     if (key.isEmpty) {
-      setState(() => _testStatus[p.id] = 'আগে API key দিন');
+      setState(() => _testStatus[p.id] = context.l10n.enterKeyFirst);
       return;
     }
-    setState(() => _testStatus[p.id] = 'পরীক্ষা চলছে...');
+    setState(() => _testStatus[p.id] = context.l10n.testing);
     try {
       final model = _models[p.id]!.text.trim().isEmpty ? p.defaultModel : _models[p.id]!.text.trim();
       final settings = context.read<SettingsStore>();
@@ -141,10 +145,10 @@ class _AdminScreenState extends State<AdminScreen> {
       // A working key is saved right away so forgetting "Save" can't lose it.
       await settings.setApiKey(p, key);
       await settings.setModel(p, model);
-      setState(() => _testStatus[p.id] = 'সংযোগ ঠিক আছে ✓ (key সেভ হয়েছে)');
+      setState(() => _testStatus[p.id] = context.l10n.connectionOk);
     } catch (e) {
       final msg = e.toString();
-      setState(() => _testStatus[p.id] = 'ব্যর্থ: ${msg.length > 120 ? msg.substring(0, 120) : msg}');
+      setState(() => _testStatus[p.id] = context.l10n.failedMsg(msg.length > 120 ? msg.substring(0, 120) : msg));
     }
   }
 
@@ -152,11 +156,11 @@ class _AdminScreenState extends State<AdminScreen> {
   Widget build(BuildContext context) {
     if (!_loaded) return const Scaffold(body: Center(child: CircularProgressIndicator()));
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin - AI Provider')),
+      appBar: DsAppBar(title: context.l10n.adminProviderTitle),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpace.lg),
         children: [
-          const Text('সক্রিয় provider', style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(context.l10n.activeProvider, style: AppText.title),
           RadioGroup<String>(
             groupValue: _active,
             onChanged: (v) => setState(() => _active = v ?? _active),
@@ -165,36 +169,40 @@ class _AdminScreenState extends State<AdminScreen> {
             ),
           ),
           SwitchListTile(
-            title: const Text('ব্যর্থ হলে অন্য provider এ fallback'),
+            title: Text(context.l10n.fallbackSwitch),
             value: _fallback,
             onChanged: (v) => setState(() => _fallback = v),
           ),
           const Divider(),
-          for (final p in allProviders) ...[
-            const SizedBox(height: 8),
-            Text(p.label, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _keys[p.id],
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'API key', border: OutlineInputBorder()),
+          for (final p in allProviders)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpace.md),
+              child: DsCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(p.label, style: AppText.headline),
+                    const SizedBox(height: AppSpace.md),
+                    TextField(
+                      controller: _keys[p.id],
+                      obscureText: true,
+                      decoration: const InputDecoration(labelText: 'API key'),
+                    ),
+                    const SizedBox(height: AppSpace.md),
+                    TextField(
+                      controller: _models[p.id],
+                      decoration: InputDecoration(labelText: 'Model (default: ${p.defaultModel})'),
+                    ),
+                    Row(children: [
+                      TextButton(onPressed: () => _test(p), child: const Text('Test connection')),
+                      Expanded(child: Text(_testStatus[p.id] ?? '', style: AppText.caption)),
+                    ]),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _models[p.id],
-              decoration: InputDecoration(labelText: 'Model (default: ${p.defaultModel})', border: const OutlineInputBorder()),
-            ),
-            Row(children: [
-              TextButton(onPressed: () => _test(p), child: const Text('Test connection')),
-              Expanded(child: Text(_testStatus[p.id] ?? '', style: Theme.of(context).textTheme.bodySmall)),
-            ]),
-          ],
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: _save,
-            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
-            child: const Text('সেভ করুন'),
-          ),
+          const SizedBox(height: AppSpace.lg),
+          ChunkyButton(label: context.l10n.save, onPressed: _save),
         ],
       ),
     );

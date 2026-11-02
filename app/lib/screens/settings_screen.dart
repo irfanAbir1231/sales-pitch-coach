@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/l10n.dart';
 import '../main.dart';
 import '../services/profile_store.dart';
+import '../theme/app_theme.dart';
+import '../widgets/ds/ds.dart';
 import 'admin_screen.dart';
 
 /// Profile page: the officer's details and progress. Admin is a quiet link at the very bottom.
@@ -10,6 +13,7 @@ class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   Future<void> _edit(BuildContext context, ProfileStore p) async {
+    final l = context.l10n;
     final name = TextEditingController(text: p.name);
     final id = TextEditingController(text: p.employeeId);
     final area = TextEditingController(text: p.area);
@@ -19,22 +23,19 @@ class SettingsScreen extends StatelessWidget {
       isScrollControlled: true,
       showDragHandle: true,
       builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(20, 4, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+        padding: EdgeInsets.fromLTRB(AppSpace.xl, AppSpace.xs, AppSpace.xl, MediaQuery.of(ctx).viewInsets.bottom + AppSpace.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('প্রোফাইল এডিট', style: Theme.of(ctx).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            _field(name, 'নাম', Icons.person_outline),
-            _field(id, 'এমপ্লয়ি আইডি', Icons.badge_outlined),
-            _field(area, 'এলাকা / টেরিটরি', Icons.place_outlined),
-            _field(phone, 'মোবাইল নম্বর', Icons.phone_outlined, keyboard: TextInputType.phone),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('সেভ করুন')),
-            ),
+            Text(l.editProfile, style: AppText.title),
+            const SizedBox(height: AppSpace.md),
+            _field(name, l.fieldName, AppIcons.user),
+            _field(id, l.fieldEmployeeId, AppIcons.badge),
+            _field(area, l.fieldTerritory, AppIcons.pin),
+            _field(phone, l.fieldMobileLong, AppIcons.phone, keyboard: TextInputType.phone),
+            const SizedBox(height: AppSpace.sm),
+            ChunkyButton(label: l.save, onPressed: () => Navigator.pop(ctx, true)),
           ],
         ),
       ),
@@ -45,61 +46,58 @@ class SettingsScreen extends StatelessWidget {
   }
 
   static Widget _field(TextEditingController c, String label, IconData icon, {TextInputType? keyboard}) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.only(bottom: AppSpace.md),
         child: TextField(
           controller: c,
           keyboardType: keyboard,
-          decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon), border: const OutlineInputBorder()),
+          decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
         ),
       );
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
+    final l = context.l10n;
     final p = context.watch<ProfileStore>();
     final attempts = context.watch<HistoryNotifier>().store.attempts;
     final totals = attempts.map((a) => a.result.total).toList();
     final avg = totals.isEmpty ? null : totals.reduce((a, b) => a + b) / totals.length;
     final best = totals.isEmpty ? null : totals.reduce((a, b) => a > b ? a : b);
-    final shown = p.name.isEmpty ? 'আপনার নাম' : p.name;
+    final shown = p.name.isEmpty ? l.yourName : p.name;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('প্রোফাইল'),
-        actions: [IconButton(tooltip: 'এডিট', icon: const Icon(Icons.edit_outlined), onPressed: () => _edit(context, p))],
+      appBar: DsAppBar(
+        title: l.profile,
+        actions: [IconButton(tooltip: l.edit, icon: const Icon(AppIcons.edit), onPressed: () => _edit(context, p))],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpace.lg),
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              gradient: LinearGradient(colors: [cs.primaryContainer, cs.secondaryContainer]),
-            ),
+          DsCard(
+            padding: const EdgeInsets.all(AppSpace.xl),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 34,
-                  backgroundColor: cs.primary,
+                Container(
+                  width: 68,
+                  height: 68,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
                   child: Text(
                     p.name.isEmpty ? '?' : p.name.characters.first,
-                    style: TextStyle(fontSize: 28, color: cs.onPrimary, fontWeight: FontWeight.bold),
+                    style: AppText.display.copyWith(color: Colors.white),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppSpace.lg),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(shown, style: tt.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: cs.onPrimaryContainer)),
-                      Text('সেলস অফিসার', style: tt.bodyMedium?.copyWith(color: cs.onPrimaryContainer)),
+                      Text(shown, style: AppText.title),
+                      Text(l.salesOfficer, style: AppText.caption),
                       if (p.name.isEmpty)
                         TextButton(
                           style: TextButton.styleFrom(padding: EdgeInsets.zero, visualDensity: VisualDensity.compact),
                           onPressed: () => _edit(context, p),
-                          child: const Text('প্রোফাইল সম্পূর্ণ করুন'),
+                          child: Text(l.completeProfile),
                         ),
                     ],
                   ),
@@ -107,35 +105,39 @@ class SettingsScreen extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              _stat('চেষ্টা', '${attempts.length}', cs),
-              const SizedBox(width: 8),
-              _stat('গড় স্কোর', avg == null ? '–' : avg.toStringAsFixed(1), cs),
-              const SizedBox(width: 8),
-              _stat('সর্বোচ্চ', best == null ? '–' : best.toStringAsFixed(1), cs),
-            ],
+          const SizedBox(height: AppSpace.lg),
+          DsCard(
+            padding: const EdgeInsets.symmetric(vertical: AppSpace.md),
+            child: IntrinsicHeight(
+              child: Row(
+                children: [
+                  _stat(l.attempts, localizeDigits('${attempts.length}', context), AppColors.primary),
+                  const VerticalDivider(),
+                  _stat(l.avgScore, avg == null ? '–' : localizeDigits(avg.toStringAsFixed(1), context), AppColors.successLight),
+                  const VerticalDivider(),
+                  _stat(l.bestScore, best == null ? '–' : localizeDigits(best.toStringAsFixed(1), context), AppColors.orangeLight),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 16),
-          Card(
-            elevation: 0,
-            color: cs.surfaceContainerHighest,
+          const SizedBox(height: AppSpace.lg),
+          DsCard(
+            padding: const EdgeInsets.symmetric(vertical: AppSpace.sm),
             child: Column(
               children: [
-                _info(Icons.badge_outlined, 'এমপ্লয়ি আইডি', p.employeeId),
-                _info(Icons.place_outlined, 'এলাকা / টেরিটরি', p.area),
-                _info(Icons.phone_outlined, 'মোবাইল', p.phone),
+                _info(context, AppIcons.badge, l.fieldEmployeeId, p.employeeId),
+                _info(context, AppIcons.pin, l.fieldTerritory, p.area),
+                _info(context, AppIcons.phone, l.fieldMobile, p.phone),
               ],
             ),
           ),
           const SizedBox(height: 56),
           Center(
             child: TextButton.icon(
-              style: TextButton.styleFrom(foregroundColor: cs.onSurfaceVariant, textStyle: const TextStyle(fontSize: 12)),
+              style: TextButton.styleFrom(foregroundColor: AppColors.textMuted),
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminGate())),
-              icon: const Icon(Icons.admin_panel_settings_outlined, size: 16),
-              label: const Text('অ্যাডমিন'),
+              icon: const Icon(AppIcons.admin, size: 18),
+              label: Text(l.admin),
             ),
           ),
         ],
@@ -143,26 +145,21 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  static Widget _stat(String label, String value, ColorScheme cs) => Expanded(
-        child: Card(
-          elevation: 0,
-          margin: EdgeInsets.zero,
-          color: cs.surfaceContainerHighest,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            child: Column(
-              children: [
-                Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                Text(label, style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
-              ],
-            ),
-          ),
+  static Widget _stat(String label, String value, Color color) => Expanded(
+        child: Column(
+          children: [
+            Text(value, style: AppText.title.copyWith(color: color)),
+            Text(label, style: AppText.caption),
+          ],
         ),
       );
 
-  static Widget _info(IconData icon, String label, String value) => ListTile(
-        leading: Icon(icon),
-        title: Text(label, style: const TextStyle(fontSize: 12)),
-        subtitle: Text(value.isEmpty ? 'দেওয়া হয়নি' : value, style: const TextStyle(fontSize: 15)),
+  static Widget _info(BuildContext context, IconData icon, String label, String value) => ListTile(
+        leading: Icon(icon, color: AppColors.accent),
+        title: Text(label, style: AppText.caption),
+        subtitle: Text(
+          value.isEmpty ? context.l10n.notProvided : value,
+          style: value.isEmpty ? AppText.body.copyWith(color: AppColors.textMuted) : AppText.bodyStrong,
+        ),
       );
 }

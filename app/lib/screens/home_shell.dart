@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
+import '../theme/app_theme.dart';
 import 'history_screen.dart';
 import 'home_screen.dart';
 import 'product_list_screen.dart';
@@ -38,6 +40,7 @@ class _HomeShellState extends State<HomeShell> {
   }
 
   Widget _scaffold() {
+    final l = context.l10n;
     return Scaffold(
       body: IndexedStack(
         index: _index,
@@ -48,16 +51,21 @@ class _HomeShellState extends State<HomeShell> {
           const SettingsScreen(),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: _goTo,
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'হোম'),
-          NavigationDestination(
-              icon: Icon(Icons.record_voice_over_outlined), selectedIcon: Icon(Icons.record_voice_over), label: 'প্র্যাকটিস'),
-          NavigationDestination(icon: Icon(Icons.history), selectedIcon: Icon(Icons.history), label: 'ইতিহাস'),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'প্রোফাইল'),
-        ],
+      bottomNavigationBar: DecoratedBox(
+        decoration: const BoxDecoration(
+          color: AppColors.chrome,
+          border: Border(top: BorderSide(color: AppColors.border, width: 2)),
+        ),
+        child: NavigationBar(
+          selectedIndex: _index,
+          onDestinationSelected: _goTo,
+          destinations: [
+            NavigationDestination(icon: const Icon(AppIcons.home), selectedIcon: const Icon(AppIcons.homeFill), label: l.navHome),
+            NavigationDestination(icon: const Icon(AppIcons.mic), selectedIcon: const Icon(AppIcons.micFill), label: l.navPractice),
+            NavigationDestination(icon: const Icon(AppIcons.history), selectedIcon: const Icon(AppIcons.historyFill), label: l.navHistory),
+            NavigationDestination(icon: const Icon(AppIcons.profile), selectedIcon: const Icon(AppIcons.profileFill), label: l.navProfile),
+          ],
+        ),
       ),
     );
   }

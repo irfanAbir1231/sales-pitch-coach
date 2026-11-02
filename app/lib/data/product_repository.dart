@@ -15,6 +15,15 @@ class ProductRepository {
     products = (data['products'] as List)
         .map((e) => Product.fromJson(e as Map<String, dynamic>))
         .toList();
+
+    final objRaw = await rootBundle.loadString('assets/objections.json');
+    final byProduct = (jsonDecode(objRaw) as Map<String, dynamic>)['objections']
+        as Map<String, dynamic>;
+    for (final p in products) {
+      p.objections = ((byProduct[p.id] ?? const []) as List)
+          .map((e) => Objection.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
   }
 
   List<String> get categories {

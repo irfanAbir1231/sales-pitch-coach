@@ -37,7 +37,7 @@ class ScoringPrompt {
   }
 
   /// [question] is set in objection mode: the pitch is then an answer to it.
-  static String user(Product p, String pitch, {Objection? question}) {
+  static String user(Product p, String pitch, {Objection? question, String language = 'bn'}) {
     final points = p.keyPoints
         .map((k) => {
               'id': k.id,
@@ -73,7 +73,7 @@ $pitch
   "false_claims": ["ভুল বা নিষিদ্ধ দাবি, না থাকলে খালি"],
   "feedback": "বাংলায় সংক্ষিপ্ত মতামত",
   "better_line": "বাংলায় একটি উন্নত বাক্য বা পিচ যা অফিসার পরেরবার বলতে পারে"
-}
+}${language == 'en' ? ' IMPORTANT: Write "feedback" and "better_line" in English (not Bangla).' : ''}
 ''';
   }
 
